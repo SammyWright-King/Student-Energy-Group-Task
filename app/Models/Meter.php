@@ -28,5 +28,13 @@ class Meter extends Model
     {
         return $this->hasMany(MeterReading::class)->orderBy('created_at', 'desc');
     }
+
+    /**
+     * latest record belonging to meter
+     */
+    public function latest_reading() 
+    {
+        return $this->hasOne(MeterReading::class)->latest();
+    } 
 }
 

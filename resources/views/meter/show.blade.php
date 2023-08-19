@@ -58,7 +58,7 @@
 
                 //post request
                 $.post("{{ route('meter.reading.save', $meter->id) }}",  form.serialize(), function(response) {
-                    //reload
+                    console.log(response.message);
                     window.location.reload();
                 }).fail(function(error) {
                     //return error message
@@ -80,7 +80,8 @@
 
                     $.post("{{ route('estimate.reading', $meter->id)}}",  form.serialize(), function(response) {
                         console.log(response.message);
-                        // location.reload();
+                        alert(response.message);
+                        location.reload();
                     }).fail(function(error, status) {
                         console.log(error);
                         alert(error.responseJSON.error);

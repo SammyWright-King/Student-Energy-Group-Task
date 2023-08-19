@@ -92,7 +92,7 @@ class MeterController extends Controller
     /**
      * @POST generate estimated reading
      */
-    public function estimateMeterReading(Request $request, Meter $meter): JsonResponse
+    public function estimateMeterReading(Request $request, Meter $meter)
     {
         return $this->mr->estimateReading($request, $meter); 
     }
@@ -104,5 +104,5 @@ class MeterController extends Controller
     {
         return $this->upload->processDocument($request);
     }
-    
+
 }

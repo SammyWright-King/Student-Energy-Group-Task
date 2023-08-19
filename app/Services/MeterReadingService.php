@@ -33,6 +33,73 @@ class MeterReadingService
     }
 
     /**
+     * Redeclaring because I have to reuse this method within different methods
+     */
+    private function getEstimatedReading(Request $request, Meter $meter): int
+    {
+             //get the previous reading
+            $reading = $meter->latest_reading;
+            //if no reading exists, assing default values to previous date and previous value
+            if (!$reading) {
+                $previous_date = "";
+                $previous_value = 0;
+            }else {
+                $previous_date = $reading->reading_value;
+                $previous_value = $reading->reading_date;
+            }
+
+             $estimate = $this->consumption->calculateEstimate($request->date_read, eac: $meter->estimated_annual_consumption,   
+                                                 meter_type: $meter->meter_type_id, previous_reading: $previous_value,
+                                                 previous_date: $previous_date);
+            return $estimate;
+    }
+    /**
+     * Optional A2
+     * calculate the estimate reading
+     */
+    public function estimateReading(Request $request, Meter $meter): JsonResponse
+    {
+        //validate input
+        $validator = Validator::make($request->all(), [
+            'date_read' => "required|date"
+        ]);
+
+        if ($validator->fails()) return response()->json(['error'=> $validator->errors()], 402);
+        
+        //call the get estimated reading function
+        $estimate = $this->getEstimatedReading($request, $meter);
+
+        
+
+        // //save $estimate to table
+        $this->sendTODB($meter->id, ["value" => $estimate, "date_read" => $request->date_read]);
+
+        return response()->json(['message' => "estimated reading processed successfully"]);
+
+    }
+
+    /**Optional A3
+     * save new meter reading after validating it against expected/estimatated value
+     */
+    public function saveReading(Request $request, Meter $meter): JsonResponse
+    {
+        //get estimated reading
+        $estimated_value = $this->getEstimatedReading($request, $meter);
+
+        //validate the new value against the estimated value
+        if (!$this->validateReading($request->value, $estimated_value)) {
+            
+            return response()->json(['error' => "Not a valid meter reading.",
+                                    "expected" => $estimated_value], 422);
+        }
+
+        //save entry to database
+        $this->sendToDB($meter->id, $request->only(['value', 'date_read']));
+
+        return response()->json(['message' => "New meter reading recorded successfully"]);
+    }
+
+     /**
      * Optional A3
      * Validate reading against 25% expectation i.e estimatedReading
      */
@@ -55,55 +122,5 @@ class MeterReadingService
         }else {
             return false;
         }
-    }
-
-    /**
-     * calculate the estimate reading
-     */
-    public function estimateReading(Request $request, Meter $meter): JsonResponse
-    {
-        //validate input
-        $validator = Validator::make($request->all(), [
-            'new_date' => "required|date"
-        ]);
-
-        if ($validator->fails()) return response()->json(['error'=> $validator->errors()], 402);
-        
-        $previous_date = "2023-07-30";
-        $previous_reading = 200;
-
-        $estimate = $this->consumption->calculateEstimate($request->new_date, eac: $meter->estimated_annual_consumption,   
-                                            meter_type: $meter->meter_type_id, previous_reading: $previous_reading,
-                                            previous_date: $previous_date);
-
-        
-
-        // //save $estimate to table
-        // $this->sendTODB($meter->id, ["value" => $estimate, "date_read" => $request->new_date]);
-
-        // return response()->json(['message' => "estimated reading processed successfully"]);
-
-        return response()->json(['message' => $estimate]);
-
-    }
-
-    /**
-     * save new meter reading
-     */
-    public function saveReading(Request $request, Meter $meter): JsonResponse
-    {
-        //get estimated reading
-        $estimated_value = 1000;
-
-        //validate the new value against the estimated value
-        if (!$this->validateReading($request->value, $estimated_value)) {
-            
-            return response()->json(['error' => "Not a valid meter reading."], 422);
-        }
-
-        //save entry to database
-        $this->sendToDB($meter->id, $request->only(['value', 'date_read']));
-
-        return response()->json(['message' => "New meter reading recorded successfully"]);
     }
 }

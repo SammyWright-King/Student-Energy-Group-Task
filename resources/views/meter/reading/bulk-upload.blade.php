@@ -18,7 +18,7 @@
                 @csrf
                 <div class="row gy-2 gx-2 align-items-center d-flex">
                     <div class="form-group col">
-                        <input type="date" class="form-control" id="new-date" name="new_date" required>
+                        <input type="date" class="form-control" id="new-date" name="date_read" required>
                     </div>
                     <div class="form-group col-auto">
                         <button type="submit" class="btn btn-primary">Calculate Estimated Reading</button>

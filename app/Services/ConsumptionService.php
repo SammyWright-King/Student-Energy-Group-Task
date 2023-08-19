@@ -23,10 +23,15 @@ class ConsumptionService
     private int $type;
 
     /**
-     * 
+     * main logic to calculate the estimated reading for a given date on receiving parameters
+     *  new-date, 
+     *  eac .i.e estimated annual consumption 
+     *  meter_type .i.e electric or gas specified in numbers
+     *  previous meter reading if given
+     *  previous date if given
      */
     public function calculateEstimate(string $new_date, int $eac, int $meter_type,
-                                int $previous_reading, string $previous_date)
+                                int $previous_reading, string $previous_date): int
     {
         /**
          * steps
@@ -49,7 +54,7 @@ class ConsumptionService
             //Get an array of months between both dates
             $months = CarbonPeriod::create($previous_date, '30 day', $new_date);
             $count = count($months);
-            
+
             if ($count > 1) {
                 //iterate through the months and sum their monthly estimated usage
                 foreach ($months as $key => $month) {
@@ -59,10 +64,10 @@ class ConsumptionService
                     }
                 }
             }
-
+            
             //calculate estimate of previous date and add to estimates
             $estimates += $this->estimateFromPreviousDate($previous_date, $eac, $meter_type);
-
+            
             //calculate estimate on new date and add to estimates
             $estimates += $this->estimateForNewDate($new_date, $eac, $meter_type);
         
@@ -70,7 +75,7 @@ class ConsumptionService
             //calculate estimate only for the new date
             $estimates += $this->estimateForNewDate($new_date, $eac, $meter_type);
         }
-
+        
         $estimated_reading = $previous_reading + $estimates;
 
         return $estimated_reading;
