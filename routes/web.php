@@ -20,7 +20,7 @@ use App\Http\Controllers\MeterController;
 
 Route::controller(MeterController::class)->group(function() {
     Route::get('/', 'index')->name('home');
-    Route::get('/{meter}', 'show')->name('meter.show');
+    Route::get('/meter/{meter}', 'show')->name('meter.show');
     Route::get('/meter/new', 'new')->name('meter.new');
     Route::post('/meter/save', 'save')->name('meter.save');
     Route::get('/meter/{meter}/edit', 'edit')->name('meter.edit');
