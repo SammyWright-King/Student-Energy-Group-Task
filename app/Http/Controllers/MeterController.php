@@ -86,7 +86,7 @@ class MeterController extends Controller
      */
     public function saveReading(MeterReadingRequest $request, Meter $meter)
     {
-        return $this->mr->save($request, $meter->id);
+        return $this->mr->save($meter->id, $request->only(['value', 'date_read']));
     }
 
     /**

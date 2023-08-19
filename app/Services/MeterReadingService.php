@@ -17,29 +17,23 @@ class MeterReadingService
     }
 
     /**save reading to table*/
-    public function save(Request $request, int $id): JsonResponse
+    public function save(int $meter_id, array $data): void
     {
         //set actual value for column names and values
         $new_reading = [
-            "meter_id" => $id,
-            "reading_value" => $request->value,
-            "reading_date" => $request->date_read
+            "meter_id" => $meter_id,
+            "reading_value" => $data['value'],
+            "reading_date" => $data['date_read']
         ];
 
         //insert into table
         $reading = $this->mr_repo->save($new_reading);
-
-        if ($reading instanceof MeterReading) {
-            return response()->json(['message' => "new reading saved successfully"]);
-        }else {
-            return response()->json(['error' => 'problem saving data for meter'], 500);
-        }
     }
 
     /**
      * calculate the estimate reading
      */
-    public function estimateReading(Request $request, Meter $meter)
+    public function estimateReading(Request $request, Meter $meter): JsonResponse
     {
         //validate input
         $validator = Validator::make($request->all(), [
@@ -47,7 +41,6 @@ class MeterReadingService
         ]);
 
         if ($validator->fails()) return response()->json(['error'=> $validator->errors()], 402);
-        
         
         //get previous reading
         // if ($meter->readings->count() > 1) {
@@ -62,6 +55,12 @@ class MeterReadingService
         //                                     meter_type: $meter->meter_type_id, previous_reading: $previous_reading,
         //                                     previous_date: $previous_date);
         // return $meter;
-        return response()->json(['notice' => "estimated annual consumption not set"], 500);
+
+        $estimate = 1996;
+
+        //save $estimate to table
+        $this->save($meter->id, ["value" => $estimate, "date_read" => $request->new_date]);
+
+        return response()->json(['message' => "estimated reading processed successfully"]);
     }
 }

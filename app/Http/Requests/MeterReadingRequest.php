@@ -22,7 +22,7 @@ class MeterReadingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "value" => "required|numeric|max:700",
+            "value" => "required|numeric",
             "date_read" => "required|date"
         ];
     }

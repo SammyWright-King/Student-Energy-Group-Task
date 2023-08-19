@@ -27,8 +27,7 @@
                 <div class="row gy-2 gx-2 align-items-center">
                     <div class="col">
                         <label class="form-label" for="new-value">New value (Kwh)</label>
-                        <input type="number" class="form-control" id="new-value" 
-                                name="value" max=700 required>
+                        <input type="number" class="form-control" id="new-value" name="value" required>
                     </div>
                     <div class="col">
                         <label class="form-label" for="date-read">Date Read</label>
@@ -70,18 +69,16 @@
             $('#estimateForm').submit(function(e) {
                 eac = {{$meter->estimated_annual_consumption}}
                 if (eac  == 0) {
-                    //show modal prompting to go set eac
+                    //show modal prompting to go set eac for meter
                     $("#exampleModalToggle").modal('show');
+
                 }else {
-                    alert(eac)
-                    $( "#modalButton" ).trigger( "click" );
 
                     let form = $(this)
 
                     $.post("{{ route('estimate.reading', $meter->id)}}",  form.serialize(), function(response) {
-                        //console.log(response);
-                        //reload
-                        //window.location.reload();
+                        console.log(response);
+                        // location.reload();
                     }).fail(function(error, status) {
                         console(error);
                     });
