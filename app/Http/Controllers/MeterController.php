@@ -84,15 +84,15 @@ class MeterController extends Controller
     /**
      * @POST save new meter reading to table
      */
-    public function saveReading(MeterReadingRequest $request, Meter $meter)
+    public function saveMeterReading(MeterReadingRequest $request, Meter $meter)
     {
-        return $this->mr->save($meter->id, $request->only(['value', 'date_read']));
+        return $this->mr->saveReading($request, $meter);
     }
 
     /**
      * @POST generate estimated reading
      */
-    public function estimate(Request $request, Meter $meter): JsonResponse
+    public function estimateMeterReading(Request $request, Meter $meter): JsonResponse
     {
         return $this->mr->estimateReading($request, $meter); 
     }

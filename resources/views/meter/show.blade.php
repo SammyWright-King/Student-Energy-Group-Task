@@ -52,20 +52,23 @@
 @section('scripts')
     <script>
         $(document).ready(function() {
+            //new meter reading form submit action
             $('#newReadingForm').submit(function(e) {
                 let form = $(this)
 
+                //post request
                 $.post("{{ route('meter.reading.save', $meter->id) }}",  form.serialize(), function(response) {
                     //reload
                     window.location.reload();
                 }).fail(function(error) {
-                        alert(error.error);
+                    //return error message
+                    alert(error.responseJSON.error);
                 });
                
                 e.preventDefault();
             });
 
-            //estimate form
+            //estimate reading form submit action
             $('#estimateForm').submit(function(e) {
                 eac = {{$meter->estimated_annual_consumption}}
                 if (eac  == 0) {
@@ -73,14 +76,14 @@
                     $("#exampleModalToggle").modal('show');
 
                 }else {
-
                     let form = $(this)
 
                     $.post("{{ route('estimate.reading', $meter->id)}}",  form.serialize(), function(response) {
-                        console.log(response);
+                        console.log(response.message);
                         // location.reload();
                     }).fail(function(error, status) {
-                        console(error);
+                        console.log(error);
+                        alert(error.responseJSON.error);
                     });
                 }
                 
@@ -102,13 +105,14 @@
                     data:formData,
                     success: (response)=>{
                         console.log(response.message);
+
+                        alert(response.message);
                         //delay relaod by 2 seconds
-                        setTimeout(function(){
-                            window.location.reload();
-                        }, 2000)
+                        location.reload();
                     },
                     error: (error)=>{
                         console.log(error);
+                        alert(error.responseJSON.error);
                     }
                 });
             });

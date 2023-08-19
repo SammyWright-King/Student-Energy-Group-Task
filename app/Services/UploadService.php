@@ -19,7 +19,7 @@ class UploadService
     {
     }
 
-    /**
+    /**Optional B1
      * upload document
      */
     public function upload(Request $request): string
@@ -62,7 +62,7 @@ class UploadService
      */
     private function saveEntry(string $identifier, int $reading_value, string $date): void
     {
-        //check if meter exists
+        //check if meter exists in table/ valid
         $meter = $this->meter_repo->findWhere('mpxn', $identifier);
 
         if($meter && is_int($reading_value)){
@@ -77,7 +77,8 @@ class UploadService
     }
 
     /**
-     * upload document and process it
+     * Optional B2
+     * upload document and process it using the job
      */
     public function processDocument(Request $request): JsonResponse
     {
@@ -92,7 +93,7 @@ class UploadService
         //use job to read data
         ProcessBulkEntryJob::dispatch($file_path);
 
-        return response()->json(['message' => "bulk insert successful"]);
+        return response()->json(['message' => "bulk insert is being processed, Kindly note this might take a few minutes"]);
     }
 
 }

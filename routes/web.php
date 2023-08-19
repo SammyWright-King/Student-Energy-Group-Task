@@ -25,7 +25,7 @@ Route::controller(MeterController::class)->group(function() {
     Route::post('/meter/save', 'save')->name('meter.save');
     Route::get('/meter/{meter}/edit', 'edit')->name('meter.edit');
     Route::post('/meter/{meter}/update', 'update')->name('meter.update');
-    Route::post('/meter/{meter}/reading/save/', 'saveReading')->name('meter.reading.save');
-    Route::post('/meter/{meter}/reading/estimate', 'estimate')->name('estimate.reading');
+    Route::post('/meter/{meter}/reading/save/', 'saveMeterReading')->name('meter.reading.save');
+    Route::post('/meter/{meter}/reading/estimate', 'estimateMeterReading')->name('estimate.reading');
     Route::post('/meter/{meter}/bulk-upload', 'bulkUpload')->name('bulk.upload');
 });
