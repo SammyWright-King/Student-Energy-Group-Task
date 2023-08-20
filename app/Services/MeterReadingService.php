@@ -16,6 +16,75 @@ class MeterReadingService
     {
     }
 
+    /**Optional A3
+     * save new meter reading after validating it against expected/estimatated value
+     */
+    public function saveReading(Request $request, Meter $meter): JsonResponse
+    {
+        //get estimated reading
+        $estimated_value = $this->getEstimatedReading($request, $meter);
+
+        //validate the new value against the estimated value
+        if (!$this->validateReading($request->value, $estimated_value)) {
+            
+            return response()->json(['error' => "New meter entry is out of range, enter a valid reading.",
+                                    "expected" => $estimated_value], 422);
+        }
+
+        //save entry to database
+        $this->sendToDB($meter->id, $request->only(['value', 'date_read']));
+
+        return response()->json(['message' => "New meter reading recorded successfully"]);
+    }
+
+    /**
+     * Optional A2
+     * calculate the estimate reading
+     */
+    public function estimateReading(Request $request, Meter $meter): JsonResponse
+    {
+        //validate input
+        $validator = Validator::make($request->all(), [
+            'date_read' => "required|date"
+        ]);
+
+        if ($validator->fails()) return response()->json(['error'=> $validator->errors()], 402);
+        
+        //call the get estimated reading function
+        $estimate = $this->getEstimatedReading($request, $meter);
+
+        // //save $estimate to table
+        $this->sendTODB($meter->id, ["value" => $estimate, "date_read" => $request->date_read]);
+
+        return response()->json(['message' => "Your Estimated Reading from the last date is: {$estimate} Kwh"]);
+
+    }
+
+    /**
+     * Optional A3
+     * Validate reading against 25% expectation i.e estimatedReading
+     */
+    public function validateReading(int $reading_value, int $estimated_value): bool
+    {
+        /**
+         * 1. Calculate the range i.e 25% of the expected(estimated) value
+         * 2. Get the upper and the lower range
+         * 3.validate the reading value in range i.e 
+         *      lower_range < x < upper_range
+         *      where x is the reading value
+         */
+        $range = (25 * $estimated_value) / 100;
+        $lower_range = $estimated_value - $range;
+        $upper_range = $estimated_value + $range;
+
+        //validate
+        if (($reading_value >= $lower_range) && ($reading_value <= $upper_range)) {
+            return true;
+        }else {
+            return false;
+        }
+    }
+
     /**
      * save reading to table
      * */
@@ -53,72 +122,6 @@ class MeterReadingService
                                                  previous_date: $previous_date);
             return $estimate;
     }
-    /**
-     * Optional A2
-     * calculate the estimate reading
-     */
-    public function estimateReading(Request $request, Meter $meter): JsonResponse
-    {
-        //validate input
-        $validator = Validator::make($request->all(), [
-            'date_read' => "required|date"
-        ]);
 
-        if ($validator->fails()) return response()->json(['error'=> $validator->errors()], 402);
-        
-        //call the get estimated reading function
-        $estimate = $this->getEstimatedReading($request, $meter);
-
-        // //save $estimate to table
-        $this->sendTODB($meter->id, ["value" => $estimate, "date_read" => $request->date_read]);
-
-        return response()->json(['message' => "Your Estimated Reading from the last date is: {$estimate} Kwh"]);
-
-    }
-
-    /**Optional A3
-     * save new meter reading after validating it against expected/estimatated value
-     */
-    public function saveReading(Request $request, Meter $meter): JsonResponse
-    {
-        //get estimated reading
-        $estimated_value = $this->getEstimatedReading($request, $meter);
-
-        //validate the new value against the estimated value
-        if (!$this->validateReading($request->value, $estimated_value)) {
-            
-            return response()->json(['error' => "New meter entry is out of range, enter a valid reading.",
-                                    "expected" => $estimated_value], 422);
-        }
-
-        //save entry to database
-        $this->sendToDB($meter->id, $request->only(['value', 'date_read']));
-
-        return response()->json(['message' => "New meter reading recorded successfully"]);
-    }
-
-     /**
-     * Optional A3
-     * Validate reading against 25% expectation i.e estimatedReading
-     */
-    public function validateReading(int $reading_value, int $estimated_value): bool
-    {
-        /**
-         * 1. Calculate the range i.e 25% of the expected(estimated) value
-         * 2. Get the upper and the lower range
-         * 3.validate the reading value in range i.e 
-         *      lower_range < x < upper_range
-         *      where x is the reading value
-         */
-        $range = (25 * $estimated_value) / 100;
-        $lower_range = $estimated_value - $range;
-        $upper_range = $estimated_value + $range;
-
-        //validate
-        if (($reading_value >= $lower_range) && ($reading_value <= $upper_range)) {
-            return true;
-        }else {
-            return false;
-        }
-    }
+     
 }
