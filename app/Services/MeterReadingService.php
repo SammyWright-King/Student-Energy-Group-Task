@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 class MeterReadingService
 {
     public function __construct(public MeterReadingRepository $mr_repo,
-                                public ConsumptionService $consumption)
+                                public EstimationService $estimation)
     {
     }
 
@@ -44,11 +44,11 @@ class MeterReadingService
                 $previous_date = "";
                 $previous_value = 0;
             }else {
-                $previous_date = $reading->reading_value;
-                $previous_value = $reading->reading_date;
+                $previous_date = $reading->reading_date;
+                $previous_value = $reading->reading_value;
             }
 
-             $estimate = $this->consumption->calculateEstimate($request->date_read, eac: $meter->estimated_annual_consumption,   
+             $estimate = $this->estimation->calculateEstimate($request->date_read, eac: $meter->estimated_annual_consumption,   
                                                  meter_type: $meter->meter_type_id, previous_reading: $previous_value,
                                                  previous_date: $previous_date);
             return $estimate;
@@ -69,12 +69,10 @@ class MeterReadingService
         //call the get estimated reading function
         $estimate = $this->getEstimatedReading($request, $meter);
 
-        
-
         // //save $estimate to table
         $this->sendTODB($meter->id, ["value" => $estimate, "date_read" => $request->date_read]);
 
-        return response()->json(['message' => "estimated reading processed successfully"]);
+        return response()->json(['message' => "Your Estimated Reading from the last date is: {$estimate} Kwh"]);
 
     }
 
@@ -89,7 +87,7 @@ class MeterReadingService
         //validate the new value against the estimated value
         if (!$this->validateReading($request->value, $estimated_value)) {
             
-            return response()->json(['error' => "Not a valid meter reading.",
+            return response()->json(['error' => "New meter entry is out of range, enter a valid reading.",
                                     "expected" => $estimated_value], 422);
         }
 
